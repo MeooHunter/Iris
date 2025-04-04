@@ -1,0 +1,24 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    reviewers:
+      - "MeooHunter"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    reviewers:
+      - "MeooHunter"
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
