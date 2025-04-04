@@ -1,48 +1,69 @@
 name: Build Iris Plugin
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Cho phép build thủ công
   push:
     branches:
       - main
+    paths-ignore:    # Tránh trigger build không cần thiết
+      - '**.md'
+      - '.gitignore'
+      - '.github/dependabot.yml'
   pull_request:
     branches:
       - main
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'  # Build tự động mỗi ngày lúc 00:00 UTC
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4    # Cập nhật lên v4
+      with:
+        fetch-depth: 0    # Lấy toàn bộ history để đảm bảo version number chính xác
 
     - name: Set up JDK 21
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4  # Cập nhật lên v4
       with:
         java-version: '21'
-        distribution: 'adopt'
+        distribution: 'temurin'    # Sử dụng Eclipse Temurin distribution
+        cache: gradle    # Enable caching cho Gradle
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
+    - name: Validate Gradle wrapper
+      uses: gradle/wrapper-validation-action@v1
+
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
       with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+        gradle-version: wrapper
+        cache-read-only: false
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Build with Gradle
-      run: ./gradlew iris
+      run: ./gradlew iris --no-daemon    # Thêm --no-daemon để tránh memory leaks
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4    # Cập nhật lên v4
       with:
-        name: iris-jar
+        name: Iris-${{ github.sha }}
         path: build/libs/*.jar
+        retention-days: 30    # Giữ artifacts trong 30 ngày
+        if-no-files-found: error    # Fail workflow nếu không tìm thấy file
+
+    - name: Generate build report
+      if: always()    # Luôn chạy step này
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-report-${{ github.sha }}
+        path: |
+          build/reports/
+          build/test-results/
+        retention-days: 14
