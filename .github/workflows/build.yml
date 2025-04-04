@@ -1,11 +1,11 @@
 name: Build Iris Plugin
 
 on:
-  workflow_dispatch:  # Cho phép build thủ công
+  workflow_dispatch:  
   push:
     branches:
       - main
-    paths-ignore:    # Tránh trigger build không cần thiết
+    paths-ignore:    
       - '**.md'
       - '.gitignore'
       - '.github/dependabot.yml'
@@ -13,7 +13,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 0 * * *'  # Build tự động mỗi ngày lúc 00:00 UTC
+    - cron: '0 0 * * *'  
 
 jobs:
   build:
@@ -24,16 +24,16 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4    # Cập nhật lên v4
+      uses: actions/checkout@v4    
       with:
-        fetch-depth: 0    # Lấy toàn bộ history để đảm bảo version number chính xác
+        fetch-depth: 0    
 
     - name: Set up JDK 21
-      uses: actions/setup-java@v4  # Cập nhật lên v4
+      uses: actions/setup-java@v4  
       with:
         java-version: '21'
-        distribution: 'temurin'    # Sử dụng Eclipse Temurin distribution
-        cache: gradle    # Enable caching cho Gradle
+        distribution: 'temurin'    
+        cache: gradle    
 
     - name: Validate Gradle wrapper
       uses: gradle/wrapper-validation-action@v1
@@ -48,18 +48,18 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build with Gradle
-      run: ./gradlew iris --no-daemon    # Thêm --no-daemon để tránh memory leaks
+      run: ./gradlew iris --no-daemon    
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4    # Cập nhật lên v4
+      uses: actions/upload-artifact@v4    
       with:
         name: Iris-${{ github.sha }}
         path: build/libs/*.jar
-        retention-days: 30    # Giữ artifacts trong 30 ngày
-        if-no-files-found: error    # Fail workflow nếu không tìm thấy file
+        retention-days: 30    
+        if-no-files-found: error   
 
     - name: Generate build report
-      if: always()    # Luôn chạy step này
+      if: always()    
       uses: actions/upload-artifact@v4
       with:
         name: build-report-${{ github.sha }}
