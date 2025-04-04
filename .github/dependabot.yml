@@ -1,24 +1,36 @@
 version: 2
 updates:
+  # Maintain dependencies for Gradle
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
     commit-message:
       prefix: "deps"
       include: "scope"
     reviewers:
       - "MeooHunter"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     rebase-strategy: "auto"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+
+  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
     commit-message:
-      prefix: "deps"
+      prefix: "ci"
       include: "scope"
     reviewers:
       - "MeooHunter"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     rebase-strategy: "auto"
